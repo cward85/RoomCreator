@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace RoomCreator
 {
-    class RectangleObject
+    public class RectangleObject
     {
         public double XCoordinate { get; set; }
         public double YCoordinate { get; set; }

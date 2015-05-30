@@ -14,7 +14,7 @@ namespace RoomCreator
         public Node2D CurrentNode { get; set; }
         public Node2D StartNode { get; set; }
 
-        public NodeMap(double p_dblX, double p_dblY)        
+        public NodeMap(double p_dblX, double p_dblY)
         {
             StartNode = new Node2D();
 
@@ -22,42 +22,98 @@ namespace RoomCreator
             StartNode.Rectangle.YCoordinate = p_dblY;
             StartNode.Rectangle.RectangleColor = Brushes.Red;
             CurrentNode = StartNode;
-            
+
+        }
+
+        public void SetSearched(Node2D p_objCurrentNode, bool p_blnSearchToSet)
+        {
+            if (p_objCurrentNode.IsSearched != p_blnSearchToSet)
+            {
+                p_objCurrentNode.IsSearched = p_blnSearchToSet;
+
+            }
+
+            if (p_objCurrentNode.LeftNode != null && p_objCurrentNode.LeftNode.IsSearched != p_blnSearchToSet)
+            {
+                SetSearched(p_objCurrentNode.LeftNode, p_blnSearchToSet);
+            }
+
+            if (p_objCurrentNode.RightNode != null && p_objCurrentNode.RightNode.IsSearched != p_blnSearchToSet)
+            {
+                SetSearched(p_objCurrentNode.RightNode, p_blnSearchToSet);
+            }
+
+            if (p_objCurrentNode.UpNode != null && p_objCurrentNode.UpNode.IsSearched != p_blnSearchToSet)
+            {
+                SetSearched(p_objCurrentNode.UpNode, p_blnSearchToSet);
+            }
+
+            if (p_objCurrentNode.DownNode != null && p_objCurrentNode.DownNode.IsSearched != p_blnSearchToSet)
+            {
+                SetSearched(p_objCurrentNode.DownNode, p_blnSearchToSet);
+            }
         }
 
         public void DrawNodes(Canvas p_objCanvas, Node2D p_objCurrentNode)
-        {           
+        {
             if (!p_objCurrentNode.IsSearched)
             {
-                Rectangle objRectangle = DrawRectangle(Constants.RECTANGLE_WIDTH, Constants.RECTANGLE_WIDTH, p_objCurrentNode.Rectangle.RectangleColor);
+                SolidColorBrush objColorToUse; 
+
+                if (p_objCurrentNode == CurrentNode)
+                {
+                    objColorToUse = Brushes.Yellow;
+                }
+                else
+                {
+                    objColorToUse = p_objCurrentNode.Rectangle.RectangleColor;
+                }
+
+                Rectangle objRectangle = DrawRectangle(Constants.RECTANGLE_WIDTH, Constants.RECTANGLE_WIDTH, objColorToUse);
                 p_objCanvas.Children.Add(objRectangle);
                 Canvas.SetTop(objRectangle, p_objCurrentNode.Rectangle.YCoordinate);
                 Canvas.SetLeft(objRectangle, p_objCurrentNode.Rectangle.XCoordinate);
-                p_objCurrentNode.IsSearched = true;                
+                p_objCurrentNode.IsSearched = true;
             }
 
-            if (p_objCurrentNode.LeftNode != null && !p_objCurrentNode.LeftNode.IsSearched)
+            if (p_objCurrentNode.LeftNode != null)
             {
                 DrawConnectors(p_objCanvas, p_objCurrentNode.LeftNode, Direction.Left);
-                DrawNodes(p_objCanvas, p_objCurrentNode.LeftNode);
+
+                if (!p_objCurrentNode.LeftNode.IsSearched)
+                {
+                    DrawNodes(p_objCanvas, p_objCurrentNode.LeftNode);
+                }
             }
 
-            if (p_objCurrentNode.RightNode != null && !p_objCurrentNode.RightNode.IsSearched)
+            if (p_objCurrentNode.RightNode != null)
             {
                 DrawConnectors(p_objCanvas, p_objCurrentNode.RightNode, Direction.Right);
-                DrawNodes(p_objCanvas, p_objCurrentNode.RightNode);
+
+                if (!p_objCurrentNode.RightNode.IsSearched)
+                {
+                    DrawNodes(p_objCanvas, p_objCurrentNode.RightNode);
+                }
             }
 
-            if (p_objCurrentNode.UpNode != null && !p_objCurrentNode.UpNode.IsSearched)
+            if (p_objCurrentNode.UpNode != null)
             {
                 DrawConnectors(p_objCanvas, p_objCurrentNode.UpNode, Direction.Up);
-                DrawNodes(p_objCanvas, p_objCurrentNode.UpNode);
+
+                if (!p_objCurrentNode.UpNode.IsSearched)
+                {
+                    DrawNodes(p_objCanvas, p_objCurrentNode.UpNode);
+                }
             }
 
-            if (p_objCurrentNode.DownNode != null && !p_objCurrentNode.DownNode.IsSearched)
+            if (p_objCurrentNode.DownNode != null)
             {
                 DrawConnectors(p_objCanvas, p_objCurrentNode.DownNode, Direction.Down);
-                DrawNodes(p_objCanvas, p_objCurrentNode.DownNode);
+
+                if (!p_objCurrentNode.DownNode.IsSearched)
+                {
+                    DrawNodes(p_objCanvas, p_objCurrentNode.DownNode);
+                }
             }
         }
 
@@ -92,7 +148,7 @@ namespace RoomCreator
                     Canvas.SetLeft(objRectangle, p_objCurrentNode.Rectangle.XCoordinate + Constants.RECTANGLE_WIDTH / 2 - Constants.CONNECTOR_WIDTH / 2);
                     break;
             }
-        }        
+        }
 
         private Rectangle DrawRectangle(double p_dblWidth, double p_dblHeight, SolidColorBrush p_objColor)
         {
@@ -102,30 +158,86 @@ namespace RoomCreator
             objRect.Height = p_dblHeight;
             objRect.Stroke = p_objColor;
             objRect.StrokeThickness = 2;
-            
+
             return objRect;
         }
 
-        public void AddLeftNode(double p_fltCurrentX, double p_fltCurrentY)
+        public Node2D FindNode(Node2D p_objCurrentNode, double p_dblX, double p_dblY)
         {
-            CurrentNode = CurrentNode.SetLeftLink(new Node2D(), p_fltCurrentX, p_fltCurrentY);
+            if (p_dblX >= p_objCurrentNode.Rectangle.XCoordinate && p_dblX < p_objCurrentNode.Rectangle.XCoordinate + Constants.RECTANGLE_WIDTH &&
+                p_dblY >= p_objCurrentNode.Rectangle.YCoordinate && p_dblY < p_objCurrentNode.Rectangle.YCoordinate + Constants.RECTANGLE_WIDTH)
+            {
+                return p_objCurrentNode;
+            }
+
+            p_objCurrentNode.IsSearched = true;
+            Node2D objNode;
+
+            if (p_objCurrentNode.LeftNode != null && !p_objCurrentNode.LeftNode.IsSearched)
+            {
+                objNode = FindNode(p_objCurrentNode.LeftNode, p_dblX, p_dblY);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            if (p_objCurrentNode.RightNode != null && !p_objCurrentNode.RightNode.IsSearched)
+            {
+                objNode = FindNode(p_objCurrentNode.RightNode, p_dblX, p_dblY);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            if (p_objCurrentNode.UpNode != null && !p_objCurrentNode.UpNode.IsSearched)
+            {
+                objNode = FindNode(p_objCurrentNode.UpNode, p_dblX, p_dblY);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            if (p_objCurrentNode.DownNode != null && !p_objCurrentNode.DownNode.IsSearched)
+            {
+                objNode = FindNode(p_objCurrentNode.DownNode, p_dblX, p_dblY);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            return null;
         }
 
-        public void AddRightNode(double p_fltCurrentX, double p_fltCurrentY)
+        public void AddNode(Direction p_objDirection, Node2D p_objNodeToConnect = null)
         {
-            CurrentNode = CurrentNode.SetRightLink(new Node2D(), p_fltCurrentX, p_fltCurrentY);
-        }
+            if (p_objNodeToConnect == null)
+            {
+                p_objNodeToConnect = new Node2D();
+            }
 
-        public void AddUpNode(double p_fltCurrentX, double p_fltCurrentY)
-        {
-            CurrentNode = CurrentNode.SetUpLink(new Node2D(), p_fltCurrentX, p_fltCurrentY);
-        }
-
-        public void AddDownNode(double p_fltCurrentX, double p_fltCurrentY)
-        {
-            CurrentNode = CurrentNode.SetDownLink(new Node2D(), p_fltCurrentX, p_fltCurrentY);
-        }
-
-
+            switch (p_objDirection)
+            {
+                case Direction.Down:
+                    CurrentNode = CurrentNode.SetDownLink(p_objNodeToConnect);
+                    break;
+                case Direction.Left:
+                    CurrentNode = CurrentNode.SetLeftLink(p_objNodeToConnect);
+                    break;
+                case Direction.Right:
+                    CurrentNode = CurrentNode.SetRightLink(p_objNodeToConnect);
+                    break;
+                case Direction.Up:
+                    CurrentNode = CurrentNode.SetUpLink(p_objNodeToConnect);
+                    break;
+            }
+        }     
     }
 }
