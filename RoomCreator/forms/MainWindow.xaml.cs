@@ -25,21 +25,21 @@ namespace RoomCreator
         public MainWindow()
         {
             InitializeComponent();
-            SetupNodes();
-            
+     
+            SetupNodes();            
             DrawGraphics();
         }
 
         private void SetupNodes()
         {
             m_nodeMap = new NodeMap(MainCanvas.Width / 2, MainCanvas.Height / 2);
-            m_nodeMap.AddNode(Direction.Left, null);
-            m_nodeMap.AddNode(Direction.Up, null);
-            m_nodeMap.AddNode(Direction.Left, null);
-            m_nodeMap.AddNode(Direction.Up, null);
-            m_nodeMap.AddNode(Direction.Up, null);
-            m_nodeMap.AddNode(Direction.Right, null);
-            m_nodeMap.AddNode(Direction.Down, null);
+            //m_nodeMap.AddNode(Direction.Left, null);
+            //m_nodeMap.AddNode(Direction.Up, null);
+            //m_nodeMap.AddNode(Direction.Left, null);
+            //m_nodeMap.AddNode(Direction.Up, null);
+            //m_nodeMap.AddNode(Direction.Up, null);
+            //m_nodeMap.AddNode(Direction.Right, null);
+            //m_nodeMap.AddNode(Direction.Down, null);
             m_nodeMap.DrawNodes(MainCanvas, m_nodeMap.StartNode);
             m_nodeMap.SetSearched(m_nodeMap.StartNode, false);
             btnRestart.Visibility = System.Windows.Visibility.Hidden;
@@ -101,7 +101,7 @@ namespace RoomCreator
         {
             Node2D objNode = m_nodeMap.FindNode(m_nodeMap.StartNode, Mouse.GetPosition(MainCanvas).X, Mouse.GetPosition(MainCanvas).Y);
 
-            if (objNode != null)
+            if (objNode != null && objNode != m_nodeMap.StartNode)
             {
                 if (objNode.LeftNode != null)
                 {
@@ -161,16 +161,33 @@ namespace RoomCreator
             return Direction.None;
         }
 
-        private void btnClear_Click(object sender, RoutedEventArgs e)
+        private void ExportToXML()
+        {
+            m_nodeMap.ExportToXML();
+            MessageBox.Show("Export Complete");
+        }
+
+        private void ImportFromXML()
+        {
+            ClearNodes();
+            m_nodeMap.ImportFromXML();
+            MessageBox.Show("Import Complete");
+        }
+
+        private void ClearNodes()
         {
             MainCanvas.Children.Clear();
             btnRestart.Visibility = System.Windows.Visibility.Visible;
         }
 
+        private void btnClear_Click(object sender, RoutedEventArgs e)
+        {
+            ClearNodes();
+        }
+
         private void btnRestart_Click(object sender, RoutedEventArgs e)
         {
-            SetupNodes();
-            
+            SetupNodes();            
         }
 
         private void MouseLeftClick(object sender, MouseButtonEventArgs e)
@@ -181,6 +198,16 @@ namespace RoomCreator
         private void MouseRightClick(object sender, MouseButtonEventArgs e)
         {
             DeleteNode();
+        }
+
+        private void btnExport_Click(object sender, RoutedEventArgs e)
+        {
+            ExportToXML();
+        }
+
+        private void btnImport_Click(object sender, RoutedEventArgs e)
+        {
+            ImportFromXML();
         }
     }
 }

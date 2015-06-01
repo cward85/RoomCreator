@@ -9,6 +9,7 @@ namespace RoomCreator
 {
     public class Node2D
     {
+        public int id { get; set; }
         public Node2D LeftNode { get; set; }
         public Node2D RightNode { get; set; }
         public Node2D UpNode { get; set; }
@@ -23,6 +24,8 @@ namespace RoomCreator
             Rectangle = new RectangleObject();
             Rectangle.RectangleColor = Brushes.Blue;
             IsSearched = false;
+            id = NodeId.NodeID;
+            NodeId.IncrementNodeID();
         }
 
         public Node2D SetLeftLink(Node2D p_objNodeToSet)

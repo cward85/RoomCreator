@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Xml;
 
 namespace RoomCreator
 {
@@ -13,6 +14,8 @@ namespace RoomCreator
     {
         public Node2D CurrentNode { get; set; }
         public Node2D StartNode { get; set; }
+
+        private const string XML_FILE_NAME = "NodeMap.xml";
 
         public NodeMap(double p_dblX, double p_dblY)
         {
@@ -22,7 +25,6 @@ namespace RoomCreator
             StartNode.Rectangle.YCoordinate = p_dblY;
             StartNode.Rectangle.RectangleColor = Brushes.Red;
             CurrentNode = StartNode;
-
         }
 
         public void SetSearched(Node2D p_objCurrentNode, bool p_blnSearchToSet)
@@ -238,6 +240,147 @@ namespace RoomCreator
                     CurrentNode = CurrentNode.SetUpLink(p_objNodeToConnect);
                     break;
             }
-        }     
+        }
+                
+        private Node2D SearchByNodeId(Node2D p_objCurrentNode, int p_intId)
+        {
+            p_objCurrentNode.IsSearched = true;
+            Node2D objNode;
+
+            if (p_objCurrentNode.id == p_intId)
+            {
+                return p_objCurrentNode;
+            }
+
+            if (p_objCurrentNode.LeftNode != null && !p_objCurrentNode.LeftNode.IsSearched)
+            {
+                objNode = SearchByNodeId(p_objCurrentNode.LeftNode, p_intId);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            if (p_objCurrentNode.RightNode != null && !p_objCurrentNode.RightNode.IsSearched)
+            {
+                objNode = SearchByNodeId(p_objCurrentNode.RightNode, p_intId);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            if (p_objCurrentNode.UpNode != null && !p_objCurrentNode.UpNode.IsSearched)
+            {
+                objNode = SearchByNodeId(p_objCurrentNode.UpNode, p_intId);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            if (p_objCurrentNode.DownNode != null && !p_objCurrentNode.DownNode.IsSearched)
+            {
+                objNode = SearchByNodeId(p_objCurrentNode.DownNode, p_intId);
+
+                if (objNode != null)
+                {
+                    return objNode;
+                }
+            }
+
+            return null;
+        }
+
+        private List<Node2D> GetNodeList()
+        {
+            List<Node2D> lstNodes = new List<Node2D>();
+
+            for(int index = 0; index <= NodeId.NodeID; index++)
+            {
+                Node2D objNode = SearchByNodeId(StartNode, index);
+
+                if (objNode != null)
+                {
+                    lstNodes.Add(objNode);
+                }
+                SetSearched(StartNode, false);
+            }
+
+            return lstNodes;
+        }
+     
+        public void ExportToXML()
+        {
+            List<Node2D> lstNodes = GetNodeList();
+
+            using (XmlWriter objWriter = XmlWriter.Create(XML_FILE_NAME))
+            {
+                objWriter.WriteStartDocument();
+                objWriter.WriteStartElement("Nodes");
+
+                foreach(Node2D objNode in lstNodes)
+                {
+                    objWriter.WriteStartElement("Node");
+
+                    objWriter.WriteElementString("Title", objNode.Title);
+                    objWriter.WriteElementString("Description", objNode.Description);
+                    objWriter.WriteElementString("Id", objNode.id.ToString());
+                    objWriter.WriteElementString("LeftId", objNode.LeftNode == null ? "NULL" : objNode.LeftNode.id.ToString());
+                    objWriter.WriteElementString("RightId", objNode.RightNode == null ? "NULL" : objNode.RightNode.id.ToString());
+                    objWriter.WriteElementString("UpId", objNode.UpNode == null ? "NULL" : objNode.UpNode.id.ToString());
+                    objWriter.WriteElementString("DownId", objNode.DownNode == null ? "NULL" : objNode.DownNode.id.ToString());
+
+                    objWriter.WriteEndElement();
+                }
+
+                objWriter.WriteEndElement();
+                objWriter.WriteEndDocument();
+            }            
+        }
+
+        private void ImportFromXML()
+        {
+            List<Node2D> lstNodes = new List<Node2D>();
+
+            using (XmlReader objRead = XmlReader.Create(XML_FILE_NAME))
+            {
+                Node2D objNode = new Node2D();
+
+                while(objRead.Read())
+                {
+                    if (objRead.IsStartElement())
+                    {                       
+                        switch(objRead.Name)
+                        {
+                            case "Title":
+                                break;
+                            case "Description":
+                                break;
+                            case "Id":
+                                break;
+                            case "LeftId":
+                                break;
+                            case "RightId":
+                                break;
+                            case "UpId":
+                                break;
+                            case "DownId":
+                                break;
+                            case "Node":
+                                objNode = new Node2D();
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        lstNodes.Add(objNode);
+                    }
+                }
+            }
+        }
     }
 }

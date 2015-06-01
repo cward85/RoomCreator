@@ -31,6 +31,7 @@ namespace RoomCreator
             txtRoomName.Text = p_objNode.Title;            
             txtDescription.Document.Blocks.Clear();
             txtDescription.AppendText(p_objNode.Description);
+            lblNodeIdValue.Content = p_objNode.id;
             m_objNode = p_objNode;
         }
 
